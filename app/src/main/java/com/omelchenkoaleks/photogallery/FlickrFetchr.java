@@ -26,10 +26,28 @@ public class FlickrFetchr {
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 throw new IOException(connection.getResponseMessage()
                         + ": with " + urlSpec);
-
-                int bytesRead = 0;
-                byte[] buffer = new byte[1024];
             }
+
+            int bytesRead = 0;
+            byte[] buffer = new byte[1024];
+
+            // Объект InputStream предоставляет байты по мере их доступности.
+            // Когда чтение будет завершено, он будет закрыт и выдаст массив байтов
+            // из ByteArrayOutputStream
+            while ((bytesRead = in.read(buffer)) > 0) {
+                out.write(buffer, 0, bytesRead);
+            }
+
+            out.close();
+            return out.toByteArray();
+
+        } finally {
+            connection.disconnect();
         }
+    }
+
+    // Метод преобразует полученные данные методом getUrlBytes(String) в String.
+    public String getUrlString(String urlSpec) throws IOException {
+        return new String(getUrlBytes(urlSpec));
     }
 }
