@@ -1,15 +1,21 @@
 package com.omelchenkoaleks.photogallery;
 
 import com.omelchenkoaleks.photogallery.constants.Constants;
+import com.omelchenkoaleks.photogallery.model.GalleryItem;
 
 import android.net.Uri;
 import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 
 // Класс, который будет поддерживать все
@@ -72,8 +78,27 @@ public class FlickrFetchr {
                     .build().toString();
             String jsonString = getUrlString(url);
             Log.i(TAG, "Received JSON: " + jsonString);
+            // Конструкто JSONObject разбирает строку, которую получил и строит иеархию
+            // объектов, соотвествующую исходному тексту JSON.
+            JSONObject jsonBody = new JSONObject(jsonString);
         } catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items", ioe);
+        } catch (JSONException je) {
+            Log.e(TAG, "Failed to parse JSON", je);
+        }
+    }
+
+    // Нужен метод для извлечения информации каждой фотографии, которая содержиться
+    // во вложенном объекте JSONObject в виде объекта JSONArray. Эти объекты содержат
+    // метаданные о каждой фотографии.
+    private void parseItems(List<GalleryItem> items, JSONObject jsonBody)
+            throws IOException, JSONException {
+
+        JSONObject photosJsonObject = jsonBody.getJSONObject("photos");
+        JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
+
+        for (int i = 0; i < photoJsonArray.length(); i++) {
+
         }
     }
 }
