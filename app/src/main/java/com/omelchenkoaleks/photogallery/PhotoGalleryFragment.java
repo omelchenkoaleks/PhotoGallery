@@ -27,6 +27,7 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         protected Void doInBackground(Void... params) {
             // Теперь вызываем уже собранный URL-адресс в методе fetchItems().
+            // Получаем так разметку JSON с Flickr (данные).
             new FlickrFetchr().fetchItems();
             return null;
         }
