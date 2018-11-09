@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -66,7 +67,10 @@ public class FlickrFetchr {
     }
 
     // Метод, который строит соответствующий URL-адрес запроса и загружает его содержимое.
-    public void fetchItems() {
+    public List<GalleryItem> fetchItems() {
+
+        List<GalleryItem> items = new ArrayList<>();
+
         try {
             String url = Uri.parse(Constants.MAIN_URL)
                     .buildUpon()
@@ -81,11 +85,17 @@ public class FlickrFetchr {
             // Конструкто JSONObject разбирает строку, которую получил и строит иеархию
             // объектов, соотвествующую исходному тексту JSON.
             JSONObject jsonBody = new JSONObject(jsonString);
+
+            // TODO:
+            parseItems(items, jsonBody);
+
         } catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items", ioe);
         } catch (JSONException je) {
             Log.e(TAG, "Failed to parse JSON", je);
         }
+
+        return items;
     }
 
     // Нужен метод для извлечения информации каждой фотографии, которая содержиться
@@ -98,7 +108,19 @@ public class FlickrFetchr {
         JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
 
         for (int i = 0; i < photoJsonArray.length(); i++) {
+            JSONObject photoJsonObject = photoJsonArray.getJSONObject(i);
 
+            GalleryItem item = new GalleryItem();
+            item.setId(photoJsonObject.getString("id"));
+            item.setCaption(photoJsonObject.getString("title"));
+
+            // Нужна проверка, потому-что сайт не всегда возвращает URL-адрес для изображения.
+            if (!photoJsonObject.has("url_s")) {
+                continue;
+            }
+
+            item.setUrl(photoJsonObject.getString("url_s"));
+            items.add(item);
         }
     }
 }
