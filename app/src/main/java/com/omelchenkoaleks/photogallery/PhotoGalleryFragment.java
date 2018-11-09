@@ -11,8 +11,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-import java.io.IOException;
+import com.omelchenkoaleks.photogallery.model.GalleryItem;
+
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PhotoGalleryFragment extends Fragment {
 
@@ -20,16 +26,26 @@ public class PhotoGalleryFragment extends Fragment {
 
     private RecyclerView photoRecyclerView;
 
+    private List<GalleryItem> items = new ArrayList<>();
+
     // Класс помогает сделать тест сетевому классу в фоновом режиме и вывести
     // в журнал результат запроса по URL.
-    private class FetchItemsTask extends AsyncTask<Void, Void, Void> {
+    private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
 
         @Override
-        protected Void doInBackground(Void... params) {
-            // Теперь вызываем уже собранный URL-адресс в методе fetchItems().
-            // Получаем так разметку JSON с Flickr (данные).
-            new FlickrFetchr().fetchItems();
-            return null;
+        protected List<GalleryItem> doInBackground(Void... params) {
+            // Теперь мы возвращаем список элементов GalleryItem.
+            return new FlickrFetchr().fetchItems();
+        }
+
+        // Этот метод получает список, загруженный в doInBackground(),
+        // помещает его в items и обновляет RecyclerView.
+        // Этот метод выполняется в основном потоке а не в фоновом,
+        // поэтому обновление пользовательского интерфейса в нем безопасно.
+        @Override
+        protected void onPostExecute(List<GalleryItem> galleryItems) {
+            items = galleryItems;
+            setupAdapter();
         }
     }
 
@@ -62,6 +78,64 @@ public class PhotoGalleryFragment extends Fragment {
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view);
         photoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
+        // Каждый раз при создании нового объекта RecyclerView
+        // этот метод будет связываться с подходящим адаптерм.
+        setupAdapter();
+
         return view;
+    }
+
+    // Проверяем текущее состояние модели и настраиваем адаптер.
+    private void setupAdapter() {
+        // isAdded() проверяет, что фрагмент был присоединен к активности
+        // и поэтому результат не будет null.
+        // Это важно, мы используем AsyncTask, и некоторые действия инициируются
+        // самостоятельно в другом потоке - теперь мы не можем предполагать,
+        // что фрагмент присоединен к активности - это нужно проверить!
+        if (isAdded()) {
+            // Назначаем адаптер RecyclerView.
+            photoRecyclerView.setAdapter(new PhotoAdapter(items));
+        }
+    }
+
+    private class PhotoHolder extends RecyclerView.ViewHolder {
+
+        private TextView titleTextView;
+
+        public PhotoHolder(@NonNull View itemView) {
+            super(itemView);
+            titleTextView = (TextView) itemView;
+        }
+
+        public void bindGalleryItem(GalleryItem item) {
+            titleTextView.setText(item.toString());
+        }
+    }
+
+    private class PhotoAdapter extends RecyclerView.Adapter<PhotoHolder> {
+
+        private List<GalleryItem> galleryItems;
+
+        public PhotoAdapter(List<GalleryItem> galleryItems) {
+            this.galleryItems = galleryItems;
+        }
+
+        @NonNull
+        @Override
+        public PhotoHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
+            TextView textView = new TextView((getActivity()));
+            return new PhotoHolder(textView);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull PhotoHolder photoHolder, int position) {
+            GalleryItem galleryItem = galleryItems.get(position);
+            photoHolder.bindGalleryItem(galleryItem);
+        }
+
+        @Override
+        public int getItemCount() {
+            return galleryItems.size();
+        }
     }
 }
