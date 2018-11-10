@@ -1,5 +1,6 @@
 package com.omelchenkoaleks.photogallery;
 
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.omelchenkoaleks.photogallery.model.GalleryItem;
@@ -100,15 +102,14 @@ public class PhotoGalleryFragment extends Fragment {
 
     private class PhotoHolder extends RecyclerView.ViewHolder {
 
-        private TextView titleTextView;
+        private ImageView itemImageView;
 
         public PhotoHolder(@NonNull View itemView) {
             super(itemView);
-            titleTextView = (TextView) itemView;
+            itemImageView = itemView.findViewById(R.id.item_image_view);
         }
-
-        public void bindGalleryItem(GalleryItem item) {
-            titleTextView.setText(item.toString());
+        public void bindDrawable(Drawable drawable) {
+            itemImageView.setImageDrawable(drawable);
         }
     }
 
@@ -123,14 +124,18 @@ public class PhotoGalleryFragment extends Fragment {
         @NonNull
         @Override
         public PhotoHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
-            TextView textView = new TextView((getActivity()));
-            return new PhotoHolder(textView);
+            // Здесь мы заполняем файл gallery_item и передаем его конструктору PhotoHolder.
+            LayoutInflater inflater = LayoutInflater.from(getActivity());
+            View view = inflater.inflate(R.layout.gallery_item, viewGroup, false);
+            return new PhotoHolder(view);
         }
 
         @Override
         public void onBindViewHolder(@NonNull PhotoHolder photoHolder, int position) {
             GalleryItem galleryItem = galleryItems.get(position);
-            photoHolder.bindGalleryItem(galleryItem);
+            // Временное изображение.
+            Drawable placeholder = getResources().getDrawable(R.drawable.com);
+            photoHolder.bindDrawable(placeholder);
         }
 
         @Override

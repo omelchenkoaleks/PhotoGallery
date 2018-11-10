@@ -1,10 +1,10 @@
 package com.omelchenkoaleks.photogallery;
 
-import com.omelchenkoaleks.photogallery.constants.Constants;
-import com.omelchenkoaleks.photogallery.model.GalleryItem;
-
 import android.net.Uri;
 import android.util.Log;
+
+import com.omelchenkoaleks.photogallery.constants.Constants;
+import com.omelchenkoaleks.photogallery.model.GalleryItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
